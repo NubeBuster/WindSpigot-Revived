@@ -117,7 +117,7 @@ public abstract class Entity implements ICommandListener {
 		int chunkY = MathHelper.floor(locY / 16.0D);
 		int chunkZ = MathHelper.floor(locZ / 16.0D);
 
-		return ad && getChunkX() == chunkX && getChunkY() == chunkY || getChunkZ() == chunkZ;
+		return ad && getChunkX() == chunkX && getChunkY() == chunkY && getChunkZ() == chunkZ;
 	}
 
 	public int ae;
