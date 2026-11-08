@@ -146,19 +146,15 @@ public abstract class World implements IBlockAccess {
 	public final PlayerMap playerMap = new PlayerMap();
 
 	// IonSpigot start - Optimise Density Cache
-	public final it.unimi.dsi.fastutil.ints.Int2FloatMap explosionDensityCache = new it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap(); // IonSpigot
-																																		// -
-																																		// Use
-																																		// faster
-																																		// collection
-																																		// here
-																																		// //
-																																		// PaperSpigot
-																																		// -
-																																		// Optimize
-																																		// explosions
-	{
-		explosionDensityCache.defaultReturnValue(-1.0f);
+	// Shared with the async explosion pool threads (and cleared on the main thread every tick),
+	// so it must be synchronized: a plain open hash map corrupts itself on concurrent put/rehash.
+	public final it.unimi.dsi.fastutil.ints.Int2FloatMap explosionDensityCache = it.unimi.dsi.fastutil.ints.Int2FloatMaps
+			.synchronize(newDensityCache());
+
+	private static it.unimi.dsi.fastutil.ints.Int2FloatMap newDensityCache() {
+		it.unimi.dsi.fastutil.ints.Int2FloatMap cache = new it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap();
+		cache.defaultReturnValue(-1.0f);
+		return cache;
 	}
 	// IonSpigot end
 
