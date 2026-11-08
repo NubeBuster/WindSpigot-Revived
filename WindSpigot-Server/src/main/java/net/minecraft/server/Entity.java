@@ -212,7 +212,15 @@ public abstract class Entity implements ICommandListener {
 
 	public void d(int i) {
 		this.id = i;
+		this.idOrigin = new Throwable("entity id explicitly set to " + i + " on thread " + Thread.currentThread().getName());
 	}
+
+	/**
+	 * Where this entity's id came from, recorded only in the rare cases that can produce a duplicate
+	 * id: construction off the main thread, or an explicit {@link #d(int)}. Null otherwise (main-thread
+	 * construction). Logged by {@link Chunk} when a chunk slice rejects a duplicate id.
+	 */
+	public Throwable idOrigin;
 
 	public void G() {
 		this.die();
@@ -220,6 +228,11 @@ public abstract class Entity implements ICommandListener {
 
 	public Entity(World world) {
 		this.id = Entity.nextEntityId();
+		MinecraftServer server = MinecraftServer.getServer();
+		if (server != null && Thread.currentThread() != server.primaryThread) {
+			this.idOrigin = new Throwable("entity id " + this.id + " assigned off the main thread on "
+					+ Thread.currentThread().getName());
+		}
 		this.j = 1.0D;
 		this.boundingBox = Entity.a;
 		this.width = 0.6F;

@@ -864,6 +864,22 @@ public class Chunk {
 				+ (existing == null ? "<unknown>"
 						: existing.getClass().getName() + " at " + existing.locX + "," + existing.locY + ","
 								+ existing.locZ));
+		// Identify the source: where the rejected entity is being added, and where each id came from.
+		java.util.logging.Logger log = Bukkit.getLogger();
+		log.log(java.util.logging.Level.WARNING, "Rejected entity added from:", new Throwable("add stack"));
+		logIdOrigin(log, "Rejected", entity);
+		if (existing != null) {
+			logIdOrigin(log, "Existing", existing);
+		}
+	}
+
+	private static void logIdOrigin(java.util.logging.Logger log, String label, Entity entity) {
+		if (entity.idOrigin != null) {
+			log.log(java.util.logging.Level.WARNING, label + " " + entity.getClass().getName() + " id origin:",
+					entity.idOrigin);
+		} else {
+			log.warning(label + " " + entity.getClass().getName() + " id assigned on the main thread");
+		}
 	}
 
 	public void removeEntity(Entity entity) {
