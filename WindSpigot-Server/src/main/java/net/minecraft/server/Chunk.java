@@ -820,7 +820,9 @@ public class Chunk {
 		entity.ae = this.locX;
 		entity.af = k;
 		entity.ag = this.locZ;
-		this.entitySlices[k].add(entity);
+		if (!this.entitySlices[k].add(entity)) {
+			this.warnDuplicateEntityId(entity, this.entitySlices[k]);
+		}
 		// PaperSpigot start - update counts
 		if (entity instanceof EntityItem) {
 			itemCounts[k]++;
@@ -842,6 +844,26 @@ public class Chunk {
 			}
 		}
 		// Spigot end
+	}
+
+	// The slice is keyed by entity id, so add() fails when another entity holds the same id.
+	private void warnDuplicateEntityId(Entity entity, List<Entity> slice) {
+		Entity existing = null;
+		for (Entity other : slice) {
+			if (other.getId() == entity.getId()) {
+				existing = other;
+				break;
+			}
+		}
+		if (existing == entity) {
+			return; // same entity added twice, not an id collision
+		}
+		Bukkit.getLogger().warning("Duplicate entity id " + entity.getId() + " in chunk " + this.locX + "," + this.locZ
+				+ ": " + entity.getClass().getName() + " at " + entity.locX + "," + entity.locY + "," + entity.locZ
+				+ " was not added to the chunk slice; id already held by "
+				+ (existing == null ? "<unknown>"
+						: existing.getClass().getName() + " at " + existing.locX + "," + existing.locY + ","
+								+ existing.locZ));
 	}
 
 	public void removeEntity(Entity entity) {
